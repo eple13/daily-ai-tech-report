@@ -38,7 +38,7 @@ git push -u origin main
 2. 우측 상단 **···** 메뉴 → **Connections** → **AI Briefing Bot** 추가
 3. 데이터베이스 URL에서 ID 추출:
    ```
-   https://www.notion.so/f02daa4f5a7445cbbba409db6a7f97b7?v=...
+   https://www.notion.so/f02daa4f5a74v=...
                         └──────────── 이 부분이 Database ID ────────────┘
    ```
 
