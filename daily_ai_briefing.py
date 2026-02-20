@@ -26,7 +26,7 @@ load_dotenv()
 # Configuration
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 NOTION_API_KEY = os.getenv("NOTION_API_KEY")
-NOTION_DATABASE_ID = os.getenv("NOTION_DATABASE_ID", "385206fc-e3c4-4687-8e71-657c2ab78de4")
+NOTION_DATABASE_ID = os.getenv("NOTION_DATABASE_ID")
 
 NOTION_API_URL = "https://api.notion.com/v1"
 NOTION_VERSION = "2022-06-28"
@@ -99,6 +99,11 @@ def generate_briefing_with_claude() -> Optional[dict]:
         json_match = re.search(r'```json\s*(.*?)\s*```', full_response, re.DOTALL)
         if json_match:
             return json.loads(json_match.group(1))
+
+        # JSON 코드블록 표기가 누락된 경우 중괄호 블록 추출
+        object_match = re.search(r'(\{.*\})', full_response, re.DOTALL)
+        if object_match:
+            return json.loads(object_match.group(1))
         
         # JSON 블록 없이 직접 JSON인 경우
         try:
@@ -117,6 +122,10 @@ def add_to_notion_database(item: dict, references: list) -> bool:
     """Notion 데이터베이스에 항목 추가"""
     if not NOTION_API_KEY:
         print("Error: NOTION_API_KEY not set")
+        return False
+
+    if not NOTION_DATABASE_ID:
+        print("Error: NOTION_DATABASE_ID not set")
         return False
     
     headers = {
@@ -170,10 +179,11 @@ def add_to_notion_database(item: dict, references: list) -> bool:
         response = requests.post(
             f"{NOTION_API_URL}/pages",
             headers=headers,
-            json=page_data
+            json=page_data,
+            timeout=30
         )
         
-        if response.status_code == 200:
+        if response.status_code in (200, 201):
             print(f"✅ Added: {item.get('title', 'Untitled')}")
             return True
         else:
