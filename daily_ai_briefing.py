@@ -32,9 +32,17 @@ NOTION_API_URL = "https://api.notion.com/v1"
 NOTION_VERSION = "2022-06-28"
 
 # Briefing prompt
-BRIEFING_PROMPT = """AI Product Owner로서 확인하면 좋을 최신 LLM 모델 학습 방법론, 롱 컨텍스트 처리 기술, 글로벌 AI 연구 및 논문 동향, 그리고 이에 대한 시장의 반응을 종합하여 브리핑해줘.
+BRIEFING_PROMPT = """AI Product Owner 시각에서, 오늘 날짜 기준 최신 AI 시장·연구 뉴스를 바탕으로 브리핑을 작성해줘.
 
-각 주제에 대해 상세한 설명을 제공하고, 설명 내용의 근거가 되는 논문이나 기사 링크를 주석 형태([1], [2] 등)로 본문 하단에 포함해줘. 학술적 발전과 시장의 응용 현황이 균형 있게 담기도록 구성해줘.
+중복 방지 원칙:
+1) 같은 사건을 다른 표현으로 반복하지 말고 하나의 항목으로 통합해줘.
+2) 이미 널리 알려진 오래된 이슈의 재요약은 제외하고, 최근 7일 내 새롭게 확인된 사실/발표/지표 변화 위주로 선별해줘.
+3) 항목 간 핵심 포인트가 겹치면 더 영향도가 큰 항목만 남겨줘.
+
+콘텐츠 구성 원칙:
+- 연구(논문/기술)와 시장(기업/제품/투자/규제) 관점을 균형 있게 포함해줘.
+- 각 항목은 "무엇이 새롭고 왜 중요한지"가 드러나도록 2-3문장으로 요약해줘.
+- 설명의 근거가 되는 논문·공식 발표·신뢰 가능한 기사 링크를 references에 포함해줘.
 
 응답은 반드시 다음 JSON 형식으로 제공해줘:
 
@@ -57,9 +65,9 @@ BRIEFING_PROMPT = """AI Product Owner로서 확인하면 좋을 최신 LLM 모�
 }
 ```
 
-태그는 다음 중에서 선택: RLVR, GRPO, Mamba, Long Context, Synthetic Data, KV Cache, Anthropic, OpenAI, Google, DeepSeek, Meta, Enterprise
+태그는 자유롭게 생성 가능하며, 이슈의 핵심 주제를 가장 잘 설명하는 짧은 키워드 1-3개를 사용해줘.
 
-오늘 날짜 기준으로 최신 정보를 검색하여 3-5개의 중요한 업데이트를 포함해줘."""
+오늘 날짜 기준으로 웹 검색을 활용해 최신 정보를 검증하고, 중복 없는 중요한 업데이트 3-5개만 포함해줘."""
 
 
 def generate_briefing_with_claude() -> Optional[dict]:
@@ -139,11 +147,18 @@ def add_to_notion_database(item: dict, references: list) -> bool:
     if references:
         summary_with_refs += "\n\n참고: " + " | ".join(references[:3])
     
-    # 태그 JSON 배열로 변환
+    # 태그 JSON 배열로 변환 (고정 목록 제한 없이 신규 태그 허용)
     tags = item.get("tags", [])
-    valid_tags = ["RLVR", "GRPO", "Mamba", "Long Context", "Synthetic Data", 
-                  "KV Cache", "Anthropic", "OpenAI", "Google", "DeepSeek", "Meta", "Enterprise"]
-    filtered_tags = [t for t in tags if t in valid_tags]
+    if not isinstance(tags, list):
+        tags = []
+
+    normalized_tags = []
+    for tag in tags:
+        if not isinstance(tag, str):
+            continue
+        cleaned = tag.strip()
+        if cleaned and cleaned not in normalized_tags:
+            normalized_tags.append(cleaned)
     
     # Notion 페이지 데이터 구성
     page_data = {
@@ -165,7 +180,7 @@ def add_to_notion_database(item: dict, references: list) -> bool:
                 "rich_text": [{"text": {"content": summary_with_refs[:2000]}}]
             },
             "Tags": {
-                "multi_select": [{"name": tag} for tag in filtered_tags]
+                "multi_select": [{"name": tag} for tag in normalized_tags]
             }
         }
     }
