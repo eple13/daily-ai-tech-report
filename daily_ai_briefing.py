@@ -65,7 +65,7 @@ BRIEFING_PROMPT = """AI Product Owner 시각에서, 오늘 날짜 기준 최신 
 }
 ```
 
-태그는 다음 중에서 선택: RLVR, GRPO, Mamba, Long Context, Synthetic Data, KV Cache, Anthropic, OpenAI, Google, DeepSeek, Meta, Enterprise
+태그는 자유롭게 생성 가능하며, 이슈의 핵심 주제를 가장 잘 설명하는 짧은 키워드 1-3개를 사용해줘.
 
 오늘 날짜 기준으로 웹 검색을 활용해 최신 정보를 검증하고, 중복 없는 중요한 업데이트 3-5개만 포함해줘."""
 
@@ -147,11 +147,18 @@ def add_to_notion_database(item: dict, references: list) -> bool:
     if references:
         summary_with_refs += "\n\n참고: " + " | ".join(references[:3])
     
-    # 태그 JSON 배열로 변환
+    # 태그 JSON 배열로 변환 (고정 목록 제한 없이 신규 태그 허용)
     tags = item.get("tags", [])
-    valid_tags = ["RLVR", "GRPO", "Mamba", "Long Context", "Synthetic Data", 
-                  "KV Cache", "Anthropic", "OpenAI", "Google", "DeepSeek", "Meta", "Enterprise"]
-    filtered_tags = [t for t in tags if t in valid_tags]
+    if not isinstance(tags, list):
+        tags = []
+
+    normalized_tags = []
+    for tag in tags:
+        if not isinstance(tag, str):
+            continue
+        cleaned = tag.strip()
+        if cleaned and cleaned not in normalized_tags:
+            normalized_tags.append(cleaned)
     
     # Notion 페이지 데이터 구성
     page_data = {
@@ -173,7 +180,7 @@ def add_to_notion_database(item: dict, references: list) -> bool:
                 "rich_text": [{"text": {"content": summary_with_refs[:2000]}}]
             },
             "Tags": {
-                "multi_select": [{"name": tag} for tag in filtered_tags]
+                "multi_select": [{"name": tag} for tag in normalized_tags]
             }
         }
     }
