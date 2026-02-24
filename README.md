@@ -24,3 +24,29 @@ python daily_ai_briefing.py
 - 워크플로우: `.github/workflows/daily-briefing.yml`
 - 기본 스케줄: `0 0 * * *` (매일 09:00 KST)
 - 수동 실행: `workflow_dispatch`
+
+## 코드 구조 (Mermaid)
+
+```mermaid
+flowchart TD
+    A[daily_ai_briefing.py\n메인 엔트리포인트] --> B[환경 변수 로드\npython-dotenv]
+    A --> C[generate_briefing_with_claude()]
+    A --> D[add_to_notion_database()]
+    A --> E[main()]
+
+    C --> C1[Anthropic API 호출\nweb_search tool]
+    C1 --> C2[JSON 파싱 및 items/references 반환]
+
+    E --> E1[브리핑 생성]
+    E1 --> E2[items 반복 처리]
+    E2 --> D
+    E2 --> E3[성공/실패 집계]
+
+    D --> D1[Notion Page Payload 구성]
+    D1 --> D2[requests.post /v1/pages]
+    D2 --> D3[업로드 결과 로그]
+
+    F[references/ops-playbook.md\n운영/배포 가이드] -.참조.- A
+    G[references/notion-schema.md\nNotion 속성 규격] -.참조.- D1
+    H[SKILL.md\n운영 절차/검증 체크리스트] -.참조.- A
+```
