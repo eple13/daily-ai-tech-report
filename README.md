@@ -46,7 +46,7 @@ flowchart TD
     D1 --> D2[requests.post /v1/pages]
     D2 --> D3[업로드 결과 로그]
 
-    F[references/ops-playbook.md\n운영/배포 가이드] -.참조.- A
-    G[references/notion-schema.md\nNotion 속성 규격] -.참조.- D1
-    H[SKILL.md\n운영 절차/검증 체크리스트] -.참조.- A
+    F[references/ops-playbook.md\n운영/배포 가이드] -.->|참조| A
+    G[references/notion-schema.md\nNotion 속성 규격] -.->|참조| D1
+    H[SKILL.md\n운영 절차/검증 체크리스트] -.->|참조| A
 ```
