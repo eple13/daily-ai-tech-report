@@ -17,6 +17,9 @@ venv/
 # Logs
 *.log
 
+# Claude
+tmpclaude*
+
 # OS
 .DS_Store
 Thumbs.db
