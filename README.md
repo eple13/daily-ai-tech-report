@@ -29,24 +29,24 @@ python daily_ai_briefing.py
 
 ```mermaid
 flowchart TD
-    A[daily_ai_briefing.py\n메인 엔트리포인트] --> B[환경 변수 로드\npython-dotenv]
-    A --> C[generate_briefing_with_claude()]
-    A --> D[add_to_notion_database()]
-    A --> E[main()]
+    A["daily_ai_briefing.py<br/>메인 엔트리포인트"] --> B["환경 변수 로드<br/>python-dotenv"]
+    A --> C["generate_briefing<br/>with_claude"]
+    A --> D["add_to_notion<br/>_database"]
+    A --> E["main"]
 
-    C --> C1[Anthropic API 호출\nweb_search tool]
-    C1 --> C2[JSON 파싱 및 items/references 반환]
+    C --> C1["Anthropic API 호출<br/>web_search tool"]
+    C1 --> C2["JSON 파싱<br/>items/references 반환"]
 
-    E --> E1[브리핑 생성]
-    E1 --> E2[items 반복 처리]
+    E --> E1["브리핑 생성"]
+    E1 --> E2["items 반복 처리"]
     E2 --> D
-    E2 --> E3[성공/실패 집계]
+    E2 --> E3["성공/실패 집계"]
 
-    D --> D1[Notion Page Payload 구성]
-    D1 --> D2[requests.post /v1/pages]
-    D2 --> D3[업로드 결과 로그]
+    D --> D1["Notion Page<br/>Payload 구성"]
+    D1 --> D2["requests.post<br/>/v1/pages"]
+    D2 --> D3["업로드 결과 로그"]
 
-    F[references/ops-playbook.md\n운영/배포 가이드] -.참조.- A
-    G[references/notion-schema.md\nNotion 속성 규격] -.참조.- D1
-    H[SKILL.md\n운영 절차/검증 체크리스트] -.참조.- A
+    F["references/ops-playbook.md<br/>운영/배포 가이드"] -.참조.- A
+    G["references/notion-schema.md<br/>Notion 속성 규격"] -.참조.- D1
+    H["SKILL.md<br/>운영 절차/검증 체크리스트"] -.참조.- A
 ```
